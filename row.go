@@ -533,9 +533,15 @@ func reconstructFuncOfOptional(columnIndex int16, node Node) (int16, reconstruct
 	rowLength := nextColumnIndex - columnIndex
 	return nextColumnIndex, func(value reflect.Value, levels levels, row Row) (Row, error) {
 		if !row.startsWith(columnIndex) {
+			// Schema widening can place real values for a later optional sibling after
+			// the next repeated element has already started. In that case, the current
+			// element should consume the deferred value instead of failing immediately.
 			if row, ok, err := reconstructDeferredOptionalColumn(value, levels, row, columnIndex, rowLength, reconstruct); ok || err != nil {
 				return row, err
 			}
+			// If the next repeated element starts before this optional column ever
+			// appears, treat the current element's value as omitted/null and let the
+			// later element consume its own value when reconstruction reaches it.
 			if shouldInferRepeatedOptionalColumn(row, columnIndex, levels) {
 				value.Set(reflect.Zero(value.Type()))
 				return row, nil
@@ -564,6 +570,9 @@ func reconstructFuncOfOptional(columnIndex int16, node Node) (int16, reconstruct
 	}
 }
 
+// reconstructDeferredOptionalColumn extracts a later grouped value for the
+// current repeated element when schema conversion widened the row by target
+// column order instead of repeated-element order.
 func reconstructDeferredOptionalColumn(value reflect.Value, levels levels, row Row, columnIndex, rowLength int16, reconstruct reconstructFunc) (Row, bool, error) {
 	futureStarts, firstMatch, matchCount := repeatedDeferredColumnState(row, columnIndex, levels)
 	if firstMatch < 0 || matchCount <= futureStarts {
@@ -594,6 +603,9 @@ func reconstructDeferredOptionalColumn(value reflect.Value, levels levels, row R
 	return remaining, true, err
 }
 
+// shouldInferRepeatedOptionalColumn reports whether the next value belongs to a
+// later repeated element, which means the current element omitted this optional
+// sibling entirely.
 func shouldInferRepeatedOptionalColumn(row Row, columnIndex int16, levels levels) bool {
 	if len(row) == 0 {
 		return false
@@ -604,6 +616,10 @@ func shouldInferRepeatedOptionalColumn(row Row, columnIndex int16, levels levels
 		next.RepetitionLevel() > int(levels.repetitionLevel)
 }
 
+// repeatedDeferredColumnState counts how many later repeated elements have
+// already started before the target optional column first appears. If there are
+// more matches than future starts, the extra leading match belongs to the
+// current element and can be reconstructed by extraction.
 func repeatedDeferredColumnState(row Row, columnIndex int16, levels levels) (futureStarts, firstMatch, matchCount int) {
 	firstMatch = -1
 	minFutureColumn := int(^uint(0) >> 1)

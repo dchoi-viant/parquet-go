@@ -98,6 +98,12 @@ var conversionTests = [...]struct {
 		}{ID: 1, Names: []string{}},
 	},
 
+	// These scenarios pin the two widening shapes that previously broke repeated
+	// reconstruction:
+	// 1. a missing optional sibling for every repeated element
+	// 2. a missing earlier optional sibling plus later present siblings, which used
+	//    to expose grouped-by-column rows produced by conversion
+
 	{
 		scenario: "repeated struct missing optional sibling",
 		from: narrowRepeatedRow{

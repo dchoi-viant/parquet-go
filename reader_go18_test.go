@@ -149,6 +149,8 @@ type wideGenericMixedRow struct {
 	Contacts []wideGenericMixedContact `parquet:"contacts"`
 }
 
+// These projection cases ensure the public GenericReader path exercises the
+// same repeated-sibling widening behavior as the lower-level Convert tests.
 func TestGenericReaderRepeatedStructWithMissingOptionalSibling(t *testing.T) {
 	input := []narrowGenericRow{
 		{
@@ -213,6 +215,90 @@ func BenchmarkGenericReader(b *testing.B) {
 	benchmarkGenericReader[contact](b)
 	benchmarkGenericReader[paddedBooleanColumn](b)
 	benchmarkGenericReader[optionalInt32Column](b)
+
+	b.Run("projection", func(b *testing.B) {
+		b.Run("baseline_aligned_optional_sibling_shape", func(b *testing.B) {
+			rows := make([]wideGenericRow, 1024)
+			for i := range rows {
+				rows[i] = wideGenericRow{
+					Contacts: []wideGenericContact{
+						{Name: "Luke"},
+						{Name: "Leia"},
+					},
+				}
+			}
+			benchmarkGenericReaderProjectionRows[wideGenericRow, wideGenericRow](b, rows)
+		})
+
+		b.Run("missing_optional_sibling", func(b *testing.B) {
+			rows := make([]narrowGenericRow, 1024)
+			for i := range rows {
+				rows[i] = narrowGenericRow{
+					Contacts: []narrowGenericContact{
+						{Name: "Luke"},
+						{Name: "Leia"},
+					},
+				}
+			}
+			benchmarkGenericReaderProjectionRows[narrowGenericRow, wideGenericRow](b, rows)
+		})
+
+		b.Run("baseline_aligned_present_sibling_shape", func(b *testing.B) {
+			rows := make([]wideGenericMixedRow, 1024)
+			for i := range rows {
+				firstAge := int64(7)
+				firstScore := 1.25
+				secondScore := 2.5
+				rows[i] = wideGenericMixedRow{
+					Contacts: []wideGenericMixedContact{
+						{Name: "Luke", Score: &firstScore},
+						{Name: "Leia", Age: &firstAge, Score: &secondScore},
+					},
+				}
+			}
+			benchmarkGenericReaderProjectionRows[wideGenericMixedRow, wideGenericMixedRow](b, rows)
+		})
+
+		b.Run("missing_and_present_siblings", func(b *testing.B) {
+			rows := make([]narrowGenericMixedRow, 1024)
+			for i := range rows {
+				firstAge := int64(7)
+				firstScore := 1.25
+				rows[i] = narrowGenericMixedRow{
+					Contacts: []narrowGenericMixedContact{
+						{Name: "Luke", Score: &firstScore, Age: nil},
+						{Name: "Leia", Score: nil, Age: &firstAge},
+					},
+				}
+			}
+			benchmarkGenericReaderProjectionRows[narrowGenericMixedRow, wideGenericMixedRow](b, rows)
+		})
+	})
+}
+
+func benchmarkGenericReaderProjectionRows[Source, Target any](b *testing.B, rows []Source) {
+	buffer := new(bytes.Buffer)
+	writer := parquet.NewGenericWriter[Source](buffer)
+	if _, err := writer.Write(rows); err != nil {
+		b.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		b.Fatal(err)
+	}
+
+	reader := parquet.NewGenericReader[Target](bytes.NewReader(buffer.Bytes()))
+	rowbuf := make([]Target, len(rows))
+
+	benchmarkRowsPerSecond(b, func() int {
+		n, err := reader.Read(rowbuf)
+		if err != nil {
+			if err != io.EOF {
+				b.Fatal(err)
+			}
+			reader.Reset()
+		}
+		return n
+	})
 }
 
 func benchmarkGenericReader[Row generator[Row]](b *testing.B) {
