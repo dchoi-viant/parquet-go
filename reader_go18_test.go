@@ -86,6 +86,133 @@ func testGenericReaderRows[Row any](rows []Row) error {
 	return nil
 }
 
+type narrowGenericContact struct {
+	Name string `parquet:"name"`
+}
+
+type narrowGenericRow struct {
+	Contacts []narrowGenericContact `parquet:"contacts"`
+}
+
+type wideGenericContact struct {
+	Name        string `parquet:"name"`
+	PhoneNumber string `parquet:"phoneNumber,optional"`
+}
+
+type wideGenericRow struct {
+	Contacts []wideGenericContact `parquet:"contacts"`
+}
+
+type narrowGenericMixedContact struct {
+	Name  string   `parquet:"name"`
+	Score *float64 `parquet:"score,optional"`
+	Age   *int64   `parquet:"age,optional"`
+}
+
+type narrowGenericMixedRow struct {
+	Contacts []narrowGenericMixedContact `parquet:"contacts"`
+}
+
+type wideGenericMixedContact struct {
+	Name        string   `parquet:"name"`
+	PhoneNumber string   `parquet:"phoneNumber,optional"`
+	Age         *int64   `parquet:"age,optional"`
+	Score       *float64 `parquet:"score,optional"`
+}
+
+type wideGenericMixedRow struct {
+	Contacts []wideGenericMixedContact `parquet:"contacts"`
+}
+
+func TestGenericReaderRepeatedStructWithMissingOptionalSibling(t *testing.T) {
+	input := []narrowGenericRow{
+		{
+			Contacts: []narrowGenericContact{
+				{Name: "Luke"},
+				{Name: "Leia"},
+			},
+		},
+	}
+
+	buffer := new(bytes.Buffer)
+	writer := parquet.NewGenericWriter[narrowGenericRow](buffer)
+	if _, err := writer.Write(input); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	reader := parquet.NewGenericReader[wideGenericRow](bytes.NewReader(buffer.Bytes()))
+	result := make([]wideGenericRow, len(input))
+	n, err := reader.Read(result)
+	if err != nil && !errors.Is(err, io.EOF) {
+		t.Fatal(err)
+	}
+	if n != len(input) {
+		t.Fatalf("unexpected row count: want=%d got=%d", len(input), n)
+	}
+
+	expected := []wideGenericRow{
+		{
+			Contacts: []wideGenericContact{
+				{Name: "Luke"},
+				{Name: "Leia"},
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("rows mismatch:\nwant: %+v\ngot:  %+v", expected, result)
+	}
+}
+
+func TestGenericReaderRepeatedStructWithMissingAndPresentSiblings(t *testing.T) {
+	firstAge := int64(7)
+	firstScore := 1.25
+	secondScore := 2.5
+	input := []narrowGenericMixedRow{
+		{
+			Contacts: []narrowGenericMixedContact{
+				{Name: "Luke", Score: &firstScore, Age: nil},
+				{Name: "Leia", Score: &secondScore, Age: &firstAge},
+			},
+		},
+	}
+
+	buffer := new(bytes.Buffer)
+	writer := parquet.NewGenericWriter[narrowGenericMixedRow](buffer)
+	if _, err := writer.Write(input); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	reader := parquet.NewGenericReader[wideGenericMixedRow](bytes.NewReader(buffer.Bytes()))
+	result := make([]wideGenericMixedRow, len(input))
+	n, err := reader.Read(result)
+	if err != nil && !errors.Is(err, io.EOF) {
+		t.Fatal(err)
+	}
+	if n != len(input) {
+		t.Fatalf("unexpected row count: want=%d got=%d", len(input), n)
+	}
+
+	expected := []wideGenericMixedRow{
+		{
+			Contacts: []wideGenericMixedContact{
+				{Name: "Luke", Score: &firstScore},
+				{Name: "Leia", Age: &firstAge, Score: &secondScore},
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("rows mismatch:\nwant: %+v\ngot:  %+v", expected, result)
+	}
+}
+
 func BenchmarkGenericReader(b *testing.B) {
 	benchmarkGenericReader[benchmarkRowType](b)
 	benchmarkGenericReader[booleanColumn](b)

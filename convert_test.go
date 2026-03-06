@@ -129,4 +129,121 @@ func TestConvert(t *testing.T) {
 	}
 }
 
+type narrowRepeatedContact struct {
+	Name string `parquet:"name"`
+}
+
+type narrowRepeatedRow struct {
+	Contacts []narrowRepeatedContact `parquet:"contacts"`
+}
+
+type wideRepeatedContact struct {
+	Name        string `parquet:"name"`
+	PhoneNumber string `parquet:"phoneNumber,optional"`
+}
+
+type wideRepeatedRow struct {
+	Contacts []wideRepeatedContact `parquet:"contacts"`
+}
+
+type narrowMixedContact struct {
+	Name  string   `parquet:"name"`
+	Score *float64 `parquet:"score,optional"`
+	Age   *int64   `parquet:"age,optional"`
+}
+
+type narrowMixedRow struct {
+	Contacts []narrowMixedContact `parquet:"contacts"`
+}
+
+type wideMixedContact struct {
+	Name        string   `parquet:"name"`
+	PhoneNumber string   `parquet:"phoneNumber,optional"`
+	Age         *int64   `parquet:"age,optional"`
+	Score       *float64 `parquet:"score,optional"`
+}
+
+type wideMixedRow struct {
+	Contacts []wideMixedContact `parquet:"contacts"`
+}
+
+func TestConvertRepeatedStructWithMissingOptionalSibling(t *testing.T) {
+	fromValue := narrowRepeatedRow{
+		Contacts: []narrowRepeatedContact{
+			{Name: "Luke"},
+			{Name: "Leia"},
+		},
+	}
+	toValue := wideRepeatedRow{
+		Contacts: []wideRepeatedContact{
+			{Name: "Luke"},
+			{Name: "Leia"},
+		},
+	}
+
+	to := parquet.SchemaOf(toValue)
+	from := parquet.SchemaOf(fromValue)
+
+	conv, err := parquet.Convert(to, from)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	row := from.Deconstruct(nil, fromValue)
+	row, err = conv.Convert(nil, row)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value := new(wideRepeatedRow)
+	if err := to.Reconstruct(value, row); err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(*value, toValue) {
+		t.Fatalf("converted value mismatch:\nwant = %+v\ngot  = %+v", toValue, *value)
+	}
+}
+
+func TestConvertRepeatedStructWithMissingAndPresentSiblings(t *testing.T) {
+	firstAge := int64(7)
+	firstScore := 1.25
+	secondScore := 2.5
+	fromValue := narrowMixedRow{
+		Contacts: []narrowMixedContact{
+			{Name: "Luke", Score: &firstScore, Age: nil},
+			{Name: "Leia", Score: &secondScore, Age: &firstAge},
+		},
+	}
+	toValue := wideMixedRow{
+		Contacts: []wideMixedContact{
+			{Name: "Luke", Score: &firstScore},
+			{Name: "Leia", Age: &firstAge, Score: &secondScore},
+		},
+	}
+
+	to := parquet.SchemaOf(toValue)
+	from := parquet.SchemaOf(fromValue)
+
+	conv, err := parquet.Convert(to, from)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	row := from.Deconstruct(nil, fromValue)
+	row, err = conv.Convert(nil, row)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value := new(wideMixedRow)
+	if err := to.Reconstruct(value, row); err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(*value, toValue) {
+		t.Fatalf("converted value mismatch:\nwant = %+v\ngot  = %+v", toValue, *value)
+	}
+}
+
 func newString(s string) *string { return &s }
