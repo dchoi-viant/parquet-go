@@ -402,9 +402,14 @@ func (c *convertedRows) ReadRows(rows []Row) (int, error) {
 	}()
 
 	n, err := c.rows.ReadRows(rows)
+	var sourceSchema *Schema
+	if rowReader, ok := c.rows.(RowReaderWithSchema); ok {
+		sourceSchema = rowReader.Schema()
+	}
 
 	for i, row := range rows[:n] {
 		var err error
+		debugTraceRow(sourceSchema, i, row, "convert_source")
 		c.buf, err = c.conv.Convert(c.buf[:0], row)
 		if len(c.buf) > maxRowLen {
 			maxRowLen = len(c.buf)
