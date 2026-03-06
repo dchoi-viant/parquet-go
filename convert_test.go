@@ -97,6 +97,48 @@ var conversionTests = [...]struct {
 			Names []string
 		}{ID: 1, Names: []string{}},
 	},
+
+	{
+		scenario: "repeated struct missing optional sibling",
+		from: narrowRepeatedRow{
+			Contacts: []narrowRepeatedContact{
+				{Name: "Luke"},
+				{Name: "Leia"},
+			},
+		},
+		to: wideRepeatedRow{
+			Contacts: []wideRepeatedContact{
+				{Name: "Luke"},
+				{Name: "Leia"},
+			},
+		},
+	},
+
+	{
+		scenario: "repeated struct missing and present siblings",
+		from: func() narrowMixedRow {
+			firstAge := int64(7)
+			firstScore := 1.25
+			secondScore := 2.5
+			return narrowMixedRow{
+				Contacts: []narrowMixedContact{
+					{Name: "Luke", Score: &firstScore, Age: nil},
+					{Name: "Leia", Score: &secondScore, Age: &firstAge},
+				},
+			}
+		}(),
+		to: func() wideMixedRow {
+			firstAge := int64(7)
+			firstScore := 1.25
+			secondScore := 2.5
+			return wideMixedRow{
+				Contacts: []wideMixedContact{
+					{Name: "Luke", Score: &firstScore},
+					{Name: "Leia", Age: &firstAge, Score: &secondScore},
+				},
+			}
+		}(),
+	},
 }
 
 func TestConvert(t *testing.T) {
@@ -165,85 +207,6 @@ type wideMixedContact struct {
 
 type wideMixedRow struct {
 	Contacts []wideMixedContact `parquet:"contacts"`
-}
-
-func TestConvertRepeatedStructWithMissingOptionalSibling(t *testing.T) {
-	fromValue := narrowRepeatedRow{
-		Contacts: []narrowRepeatedContact{
-			{Name: "Luke"},
-			{Name: "Leia"},
-		},
-	}
-	toValue := wideRepeatedRow{
-		Contacts: []wideRepeatedContact{
-			{Name: "Luke"},
-			{Name: "Leia"},
-		},
-	}
-
-	to := parquet.SchemaOf(toValue)
-	from := parquet.SchemaOf(fromValue)
-
-	conv, err := parquet.Convert(to, from)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	row := from.Deconstruct(nil, fromValue)
-	row, err = conv.Convert(nil, row)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	value := new(wideRepeatedRow)
-	if err := to.Reconstruct(value, row); err != nil {
-		t.Fatal(err)
-	}
-
-	if !reflect.DeepEqual(*value, toValue) {
-		t.Fatalf("converted value mismatch:\nwant = %+v\ngot  = %+v", toValue, *value)
-	}
-}
-
-func TestConvertRepeatedStructWithMissingAndPresentSiblings(t *testing.T) {
-	firstAge := int64(7)
-	firstScore := 1.25
-	secondScore := 2.5
-	fromValue := narrowMixedRow{
-		Contacts: []narrowMixedContact{
-			{Name: "Luke", Score: &firstScore, Age: nil},
-			{Name: "Leia", Score: &secondScore, Age: &firstAge},
-		},
-	}
-	toValue := wideMixedRow{
-		Contacts: []wideMixedContact{
-			{Name: "Luke", Score: &firstScore},
-			{Name: "Leia", Age: &firstAge, Score: &secondScore},
-		},
-	}
-
-	to := parquet.SchemaOf(toValue)
-	from := parquet.SchemaOf(fromValue)
-
-	conv, err := parquet.Convert(to, from)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	row := from.Deconstruct(nil, fromValue)
-	row, err = conv.Convert(nil, row)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	value := new(wideMixedRow)
-	if err := to.Reconstruct(value, row); err != nil {
-		t.Fatal(err)
-	}
-
-	if !reflect.DeepEqual(*value, toValue) {
-		t.Fatalf("converted value mismatch:\nwant = %+v\ngot  = %+v", toValue, *value)
-	}
 }
 
 func newString(s string) *string { return &s }

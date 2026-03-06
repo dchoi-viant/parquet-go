@@ -86,6 +86,31 @@ func testGenericReaderRows[Row any](rows []Row) error {
 	return nil
 }
 
+func testGenericReaderProjectionRows[Source, Target any](input []Source, expected []Target) error {
+	buffer := new(bytes.Buffer)
+	writer := parquet.NewGenericWriter[Source](buffer)
+	if _, err := writer.Write(input); err != nil {
+		return err
+	}
+	if err := writer.Close(); err != nil {
+		return err
+	}
+
+	reader := parquet.NewGenericReader[Target](bytes.NewReader(buffer.Bytes()))
+	result := make([]Target, len(expected))
+	n, err := reader.Read(result)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return err
+	}
+	if n != len(expected) {
+		return fmt.Errorf("unexpected row count: want=%d got=%d", len(expected), n)
+	}
+	if !reflect.DeepEqual(result, expected) {
+		return fmt.Errorf("rows mismatch:\nwant: %+v\ngot:  %+v", expected, result)
+	}
+	return nil
+}
+
 type narrowGenericContact struct {
 	Name string `parquet:"name"`
 }
@@ -133,26 +158,6 @@ func TestGenericReaderRepeatedStructWithMissingOptionalSibling(t *testing.T) {
 			},
 		},
 	}
-
-	buffer := new(bytes.Buffer)
-	writer := parquet.NewGenericWriter[narrowGenericRow](buffer)
-	if _, err := writer.Write(input); err != nil {
-		t.Fatal(err)
-	}
-	if err := writer.Close(); err != nil {
-		t.Fatal(err)
-	}
-
-	reader := parquet.NewGenericReader[wideGenericRow](bytes.NewReader(buffer.Bytes()))
-	result := make([]wideGenericRow, len(input))
-	n, err := reader.Read(result)
-	if err != nil && !errors.Is(err, io.EOF) {
-		t.Fatal(err)
-	}
-	if n != len(input) {
-		t.Fatalf("unexpected row count: want=%d got=%d", len(input), n)
-	}
-
 	expected := []wideGenericRow{
 		{
 			Contacts: []wideGenericContact{
@@ -161,9 +166,8 @@ func TestGenericReaderRepeatedStructWithMissingOptionalSibling(t *testing.T) {
 			},
 		},
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatalf("rows mismatch:\nwant: %+v\ngot:  %+v", expected, result)
+	if err := testGenericReaderProjectionRows(input, expected); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -179,26 +183,6 @@ func TestGenericReaderRepeatedStructWithMissingAndPresentSiblings(t *testing.T) 
 			},
 		},
 	}
-
-	buffer := new(bytes.Buffer)
-	writer := parquet.NewGenericWriter[narrowGenericMixedRow](buffer)
-	if _, err := writer.Write(input); err != nil {
-		t.Fatal(err)
-	}
-	if err := writer.Close(); err != nil {
-		t.Fatal(err)
-	}
-
-	reader := parquet.NewGenericReader[wideGenericMixedRow](bytes.NewReader(buffer.Bytes()))
-	result := make([]wideGenericMixedRow, len(input))
-	n, err := reader.Read(result)
-	if err != nil && !errors.Is(err, io.EOF) {
-		t.Fatal(err)
-	}
-	if n != len(input) {
-		t.Fatalf("unexpected row count: want=%d got=%d", len(input), n)
-	}
-
 	expected := []wideGenericMixedRow{
 		{
 			Contacts: []wideGenericMixedContact{
@@ -207,9 +191,8 @@ func TestGenericReaderRepeatedStructWithMissingAndPresentSiblings(t *testing.T) 
 			},
 		},
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatalf("rows mismatch:\nwant: %+v\ngot:  %+v", expected, result)
+	if err := testGenericReaderProjectionRows(input, expected); err != nil {
+		t.Fatal(err)
 	}
 }
 
