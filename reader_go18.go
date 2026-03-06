@@ -3,11 +3,8 @@
 package parquet
 
 import (
-	"fmt"
 	"io"
-	"os"
 	"reflect"
-	"strings"
 )
 
 // GenericReader is similar to a Reader but uses a type parameter to define the
@@ -132,9 +129,7 @@ func (r *GenericReader[T]) readRows(rows []T) (int, error) {
 		schema := r.base.Schema()
 
 		for i, row := range r.base.rowbuf[:n] {
-			debugTraceRow(schema, i, row, "before_reconstruct")
 			if err := schema.Reconstruct(&rows[i], row); err != nil {
-				debugTraceRow(schema, i, row, "reconstruct_error")
 				return i, err
 			}
 		}
@@ -169,35 +164,4 @@ func readFuncOf[T any](t reflect.Type, schema *Schema) readFunc[T] {
 		}
 	}
 	panic("cannot create reader for values of type " + t.String())
-}
-
-var debugRowTraceEnabled = os.Getenv("PARQUET_DEBUG_ROWS") != ""
-
-func debugTraceRow(schema *Schema, rowIndex int, row Row, stage string) {
-	if !debugRowTraceEnabled {
-		return
-	}
-
-	var columns [][]string
-	if schema != nil {
-		columns = schema.Columns()
-	}
-	fmt.Fprintf(os.Stderr, "parquet_debug stage=%s row=%d values=%d\n", stage, rowIndex, len(row))
-	for i, value := range row {
-		columnIndex := value.Column()
-		columnPath := "<unknown>"
-		if columnIndex >= 0 && columnIndex < len(columns) {
-			columnPath = strings.Join(columns[columnIndex], ".")
-		}
-		fmt.Fprintf(
-			os.Stderr,
-			"  value[%d] col=%d path=%s rep=%d def=%d value=%+v\n",
-			i,
-			columnIndex,
-			columnPath,
-			value.RepetitionLevel(),
-			value.DefinitionLevel(),
-			value,
-		)
-	}
 }
