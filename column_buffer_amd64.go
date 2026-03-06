@@ -3,9 +3,9 @@
 package parquet
 
 import (
-	"github.com/vc42/parquet-go/internal/bytealg"
-	"github.com/vc42/parquet-go/internal/unsafecast"
-	"github.com/vc42/parquet-go/sparse"
+	"github.com/dchoi-viant/parquet-go/internal/bytealg"
+	"github.com/dchoi-viant/parquet-go/internal/unsafecast"
+	"github.com/dchoi-viant/parquet-go/sparse"
 	"golang.org/x/sys/cpu"
 )
 

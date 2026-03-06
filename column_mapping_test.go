@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vc42/parquet-go"
+	"github.com/dchoi-viant/parquet-go"
 )
 
 func ExampleSchema_Lookup() {

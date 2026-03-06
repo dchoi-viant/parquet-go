@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/vc42/parquet-go/encoding"
-	"github.com/vc42/parquet-go/internal/unsafecast"
+	"github.com/dchoi-viant/parquet-go/encoding"
+	"github.com/dchoi-viant/parquet-go/internal/unsafecast"
 )
 
 func EncodeInt32(t *testing.T, enc encoding.Encoding, min, max int, bitWidth uint) {

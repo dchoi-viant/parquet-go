@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vc42/parquet-go"
+	"github.com/dchoi-viant/parquet-go"
 )
 
 func BenchmarkGenericWriter(b *testing.B) {

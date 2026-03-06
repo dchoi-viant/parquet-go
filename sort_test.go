@@ -4,8 +4,8 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/dchoi-viant/parquet-go"
 	"github.com/google/uuid"
-	"github.com/vc42/parquet-go"
 )
 
 func TestSortFunc(t *testing.T) {

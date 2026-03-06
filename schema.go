@@ -8,10 +8,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/dchoi-viant/parquet-go/compress"
+	"github.com/dchoi-viant/parquet-go/deprecated"
+	"github.com/dchoi-viant/parquet-go/encoding"
 	"github.com/google/uuid"
-	"github.com/vc42/parquet-go/compress"
-	"github.com/vc42/parquet-go/deprecated"
-	"github.com/vc42/parquet-go/encoding"
 )
 
 // Schema represents a parquet schema created from a Go value.
@@ -59,14 +59,14 @@ type Schema struct {
 //	timestamp | for int64 types use the TIMESTAMP logical type with, by default, millisecond precision
 //	split     | for float32/float64, use the BYTE_STREAM_SPLIT encoding
 //
-// The date logical type is an int32 value of the number of days since the unix epoch
+// # The date logical type is an int32 value of the number of days since the unix epoch
 //
 // The timestamp precision can be changed by defining which precision to use as an argument.
 // Supported precisions are: nanosecond, millisecond and microsecond. Example:
 //
-//  type Message struct {
-//    TimestrampMicros int64 `parquet:"timestamp_micros,timestamp(microsecond)"
-//  }
+//	type Message struct {
+//	  TimestrampMicros int64 `parquet:"timestamp_micros,timestamp(microsecond)"
+//	}
 //
 // The decimal tag must be followed by two integer parameters, the first integer
 // representing the scale and the second the precision; for example:

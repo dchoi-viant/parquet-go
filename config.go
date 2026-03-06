@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vc42/parquet-go/compress"
+	"github.com/dchoi-viant/parquet-go/compress"
 )
 
 const (
-	DefaultCreatedBy            = "github.com/vc42/parquet-go"
+	DefaultCreatedBy            = "github.com/dchoi-viant/parquet-go"
 	DefaultColumnIndexSizeLimit = 16
 	DefaultColumnBufferCapacity = 16 * 1024
 	DefaultPageBufferSize       = 256 * 1024
@@ -28,7 +28,6 @@ const (
 //		SkipPageIndex:    true,
 //		SkipBloomFilters: true,
 //	})
-//
 type FileConfig struct {
 	SkipPageIndex    bool
 	SkipBloomFilters bool
@@ -82,7 +81,6 @@ func (c *FileConfig) Validate() error {
 //	reader := parquet.NewReader(output, schema, &parquet.ReaderConfig{
 //		// ...
 //	})
-//
 type ReaderConfig struct {
 	Schema *Schema
 }
@@ -131,7 +129,6 @@ func (c *ReaderConfig) Validate() error {
 //	writer := parquet.NewWriter(output, schema, &parquet.WriterConfig{
 //		CreatedBy: "my test program",
 //	})
-//
 type WriterConfig struct {
 	CreatedBy            string
 	ColumnPageBuffers    PageBufferPool
@@ -225,7 +222,6 @@ func (c *WriterConfig) Validate() error {
 //	buffer := parquet.NewBuffer(&parquet.RowGroupConfig{
 //		ColumnBufferCapacity: 10_000,
 //	})
-//
 type RowGroupConfig struct {
 	ColumnBufferCapacity int
 	SortingColumns       []SortingColumn

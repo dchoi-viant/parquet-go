@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dchoi-viant/parquet-go"
+	"github.com/dchoi-viant/parquet-go/deprecated"
+	"github.com/dchoi-viant/parquet-go/internal/quick"
 	"github.com/google/uuid"
-	"github.com/vc42/parquet-go"
-	"github.com/vc42/parquet-go/deprecated"
-	"github.com/vc42/parquet-go/internal/quick"
 )
 
 const (

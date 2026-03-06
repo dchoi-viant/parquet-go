@@ -3,7 +3,7 @@
 package bitpack
 
 import (
-	"github.com/vc42/parquet-go/internal/unsafecast"
+	"github.com/dchoi-viant/parquet-go/internal/unsafecast"
 )
 
 func unpackInt32(dst []int32, src []byte, bitWidth uint) {

@@ -3,7 +3,7 @@ package parquet_test
 import (
 	"testing"
 
-	"github.com/vc42/parquet-go"
+	"github.com/dchoi-viant/parquet-go"
 )
 
 func TestSchemaOf(t *testing.T) {

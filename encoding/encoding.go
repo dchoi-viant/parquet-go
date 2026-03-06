@@ -5,7 +5,7 @@ package encoding
 import (
 	"math"
 
-	"github.com/vc42/parquet-go/format"
+	"github.com/dchoi-viant/parquet-go/format"
 )
 
 const (

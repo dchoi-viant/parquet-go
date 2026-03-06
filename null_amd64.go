@@ -2,7 +2,7 @@
 
 package parquet
 
-import "github.com/vc42/parquet-go/sparse"
+import "github.com/dchoi-viant/parquet-go/sparse"
 
 //go:noescape
 func nullIndex8(bits *uint64, rows sparse.Array)

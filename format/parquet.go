@@ -3,7 +3,7 @@ package format
 import (
 	"fmt"
 
-	"github.com/vc42/parquet-go/deprecated"
+	"github.com/dchoi-viant/parquet-go/deprecated"
 )
 
 // Types supported by Parquet. These types are intended to be used in combination
@@ -281,11 +281,11 @@ func (t *LogicalType) String() string {
 
 // Represents a element inside a schema definition.
 //
-//	- if it is a group (inner node) then type is undefined and num_children is
-//    defined
+//   - if it is a group (inner node) then type is undefined and num_children is
+//     defined
 //
-//	- if it is a primitive type (leaf) then type is defined and num_children is
-//    undefined
+//   - if it is a primitive type (leaf) then type is defined and num_children is
+//     undefined
 //
 // The nodes are listed in depth first traversal order.
 type SchemaElement struct {

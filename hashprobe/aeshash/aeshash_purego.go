@@ -2,7 +2,7 @@
 
 package aeshash
 
-import "github.com/vc42/parquet-go/sparse"
+import "github.com/dchoi-viant/parquet-go/sparse"
 
 // Enabled always returns false since we assume that AES instructions are not
 // available by default.

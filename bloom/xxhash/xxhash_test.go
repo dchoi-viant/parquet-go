@@ -3,7 +3,7 @@ package xxhash_test
 import (
 	"testing"
 
-	"github.com/vc42/parquet-go/bloom/xxhash"
+	"github.com/dchoi-viant/parquet-go/bloom/xxhash"
 )
 
 func TestSum64(t *testing.T) {

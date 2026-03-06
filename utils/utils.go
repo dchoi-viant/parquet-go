@@ -57,7 +57,7 @@ func StringToDate(ts string) int32 {
 	}
 	t, err := time.Parse(layout[0:len(ts)], ts)
 	if err != nil {
-		fmt.Println("failed to convert time: %s %v\n", ts, err)
+		fmt.Printf("failed to convert time: %s %v\n", ts, err)
 		return 0
 	}
 	daysInSec := t.Unix() + 1

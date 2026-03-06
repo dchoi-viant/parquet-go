@@ -5,7 +5,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/vc42/parquet-go"
+	"github.com/dchoi-viant/parquet-go"
 )
 
 func assertCompare(t *testing.T, a, b parquet.Value, cmp func(parquet.Value, parquet.Value) int, want int) {

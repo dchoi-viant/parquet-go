@@ -1,8 +1,8 @@
 package bitpacked
 
 import (
-	"github.com/vc42/parquet-go/encoding"
-	"github.com/vc42/parquet-go/format"
+	"github.com/dchoi-viant/parquet-go/encoding"
+	"github.com/dchoi-viant/parquet-go/format"
 )
 
 type Encoding struct {

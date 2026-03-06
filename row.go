@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/vc42/parquet-go/utils"
 	"io"
 	"reflect"
+
+	"github.com/dchoi-viant/parquet-go/utils"
 )
 
 const (
@@ -533,11 +534,6 @@ func reconstructFuncOfOptional(columnIndex int16, node Node) (int16, reconstruct
 	rowLength := nextColumnIndex - columnIndex
 	return nextColumnIndex, func(value reflect.Value, levels levels, row Row) (Row, error) {
 		if !row.startsWith(columnIndex) {
-			// convert.go now has an interleaving fast path for recognized repeated
-			// spans, but reconstruction still keeps this fallback because grouped
-			// rows can still appear for widening cases the converter does not yet
-			// normalize. This preserves correctness while convert.go incrementally
-			// absorbs more of the performance-sensitive cases.
 			// Schema widening can place real values for a later optional sibling after
 			// the next repeated element has already started. In that case, the current
 			// element should consume the deferred value instead of failing immediately.

@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/sys/cpu"
 
-	"github.com/vc42/parquet-go/sparse"
+	"github.com/dchoi-viant/parquet-go/sparse"
 )
 
 // hashRandomBytes is 48 since this is what the assembly code depends on.

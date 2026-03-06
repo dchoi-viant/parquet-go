@@ -2,7 +2,7 @@
 
 package parquet
 
-import "github.com/vc42/parquet-go/sparse"
+import "github.com/dchoi-viant/parquet-go/sparse"
 
 func broadcastValueInt32(dst []int32, src int8) {
 	value := 0x01010101 * int32(src)

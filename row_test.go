@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/dchoi-viant/parquet-go"
 	"github.com/google/uuid"
-	"github.com/vc42/parquet-go"
 )
 
 func TestRowClone(t *testing.T) {

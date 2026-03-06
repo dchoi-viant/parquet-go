@@ -2,7 +2,7 @@
 
 package hashprobe
 
-import "github.com/vc42/parquet-go/sparse"
+import "github.com/dchoi-viant/parquet-go/sparse"
 
 func multiProbe32(table []table32Group, numKeys int, hashes []uintptr, keys sparse.Uint32Array, values []int32) int {
 	return multiProbe32Default(table, numKeys, hashes, keys, values)

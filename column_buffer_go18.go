@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/vc42/parquet-go/deprecated"
-	"github.com/vc42/parquet-go/internal/unsafecast"
-	"github.com/vc42/parquet-go/sparse"
-	"github.com/vc42/parquet-go/utils"
+	"github.com/dchoi-viant/parquet-go/deprecated"
+	"github.com/dchoi-viant/parquet-go/internal/unsafecast"
+	"github.com/dchoi-viant/parquet-go/sparse"
+	"github.com/dchoi-viant/parquet-go/utils"
 )
 
 // writeRowsFunc is the type of functions that apply rows to a set of column
@@ -20,9 +20,8 @@ import (
 //
 // - rows is the array of Go values to write to the column buffers.
 //
-// - levels is used to track the column index, repetition and definition levels
-//   of values when writing optional or repeated columns.
-//
+//   - levels is used to track the column index, repetition and definition levels
+//     of values when writing optional or repeated columns.
 type writeRowsFunc func(columns []ColumnBuffer, rows sparse.Array, levels columnLevels) error
 
 // writeRowsFuncOf generates a writeRowsFunc function for the given Go type and

@@ -11,11 +11,11 @@ import (
 	"math/bits"
 	"sort"
 
+	"github.com/dchoi-viant/parquet-go/compress"
+	"github.com/dchoi-viant/parquet-go/encoding"
+	"github.com/dchoi-viant/parquet-go/encoding/plain"
+	"github.com/dchoi-viant/parquet-go/format"
 	"github.com/segmentio/encoding/thrift"
-	"github.com/vc42/parquet-go/compress"
-	"github.com/vc42/parquet-go/encoding"
-	"github.com/vc42/parquet-go/encoding/plain"
-	"github.com/vc42/parquet-go/format"
 )
 
 // Deprecated: A Writer uses a parquet schema and sequence of Go values to
@@ -68,7 +68,6 @@ type Writer struct {
 //		writer := parquet.NewWriter(output, config)
 //		...
 //	}
-//
 func NewWriter(output io.Writer, options ...WriterOption) *Writer {
 	config, err := NewWriterConfig(options...)
 	if err != nil {

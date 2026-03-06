@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/vc42/parquet-go/internal/quick"
+	"github.com/dchoi-viant/parquet-go/internal/quick"
 )
 
 var benchmarkBufferSizes = [...]int{

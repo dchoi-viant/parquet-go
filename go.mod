@@ -1,4 +1,4 @@
-module github.com/vc42/parquet-go
+module github.com/dchoi-viant/parquet-go
 
 go 1.18
 

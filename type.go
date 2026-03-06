@@ -6,9 +6,9 @@ import (
 	"math/bits"
 	"time"
 
-	"github.com/vc42/parquet-go/deprecated"
-	"github.com/vc42/parquet-go/encoding"
-	"github.com/vc42/parquet-go/format"
+	"github.com/dchoi-viant/parquet-go/deprecated"
+	"github.com/dchoi-viant/parquet-go/encoding"
+	"github.com/dchoi-viant/parquet-go/format"
 )
 
 // Kind is an enumeration type representing the physical types supported by the

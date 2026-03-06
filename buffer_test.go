@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/vc42/parquet-go"
-	"github.com/vc42/parquet-go/encoding"
+	"github.com/dchoi-viant/parquet-go"
+	"github.com/dchoi-viant/parquet-go/encoding"
 )
 
 var bufferTests = [...]struct {

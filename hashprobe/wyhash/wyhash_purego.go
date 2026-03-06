@@ -2,7 +2,7 @@
 
 package wyhash
 
-import "github.com/vc42/parquet-go/sparse"
+import "github.com/dchoi-viant/parquet-go/sparse"
 
 func MultiHashUint32Array(hashes []uintptr, values sparse.Uint32Array, seed uintptr) {
 	for i := range hashes {
